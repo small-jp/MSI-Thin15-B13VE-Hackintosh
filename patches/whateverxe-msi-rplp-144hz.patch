@@ -1,0 +1,30 @@
+diff --git a/WhateverXe/kern_display13_wm.hpp b/WhateverXe/kern_display13_wm.hpp
+index b4cc458..1cc2584 100644
+--- a/WhateverXe/kern_display13_wm.hpp
++++ b/WhateverXe/kern_display13_wm.hpp
+@@ -288,10 +288,10 @@ inline TriggerSurfaces triggerSurfaces(const TriggerPacket *packets,uint32_t cou
+ // every consumer still fits its bandwidth. A clock request alone is no proof.
+ inline bool clockFits(const Snapshot &s,uint64_t nativeHz) {
+     return s.primary && s.primary->status==Status::Complete && nativeHz &&
+-        s.primary->pixelHz && s.primary->pixelHz<=nativeHz/2 && s.pipePixelHz &&
+-        s.pipePixelHz<=nativeHz/2 && s.pipeLineTime==pipeLineTime(s.primary->htotal,s.pipePixelHz) &&
++        s.primary->pixelHz && s.primary->pixelHz<=nativeHz && s.pipePixelHz &&
++        s.pipePixelHz<=nativeHz && s.pipeLineTime==pipeLineTime(s.primary->htotal,s.pipePixelHz) &&
+         (!s.cursorActive || (s.cursor && s.cursor->status==Status::Complete &&
+-            s.cursor->pixelHz && s.cursor->pixelHz<=nativeHz/2));
++            s.cursor->pixelHz && s.cursor->pixelHz<=nativeHz));
+ }
+ enum class LatchCheck : uint32_t {None,Controls,OtherPlane,DSB,Clock,Registers,Live,Frame,AwaitingScanout,AwaitingFlip};
+ struct Latch {
+diff --git a/WhateverXe/kern_vbt.hpp b/WhateverXe/kern_vbt.hpp
+index bb14f41..1f0613a 100644
+--- a/WhateverXe/kern_vbt.hpp
++++ b/WhateverXe/kern_vbt.hpp
+@@ -264,6 +264,7 @@ inline Ports parse(const void *data,size_t length,Family family,const uint8_t *i
+             // Identical wire records carry no competing ownership. Preserve
+             // every byte (including the native handle) when deciding equality.
+             if(!memcmp(records[d],c,stride))continue;
++            if((u16(records[d]+2)&0x1004)==0x1004)continue; // MSI: an eDP panel record wins over a later duplicate on its port (as i915)
+             r.status=Status::Conflict;return r;
+         }
+         records[d]=c;if((type&0x1004)==0x1004)panelHandle=u16(c);
