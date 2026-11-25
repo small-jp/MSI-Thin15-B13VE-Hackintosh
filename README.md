@@ -39,3 +39,23 @@ Built from https://github.com/jkbuha/WhateverXe-contrib (branch `contrib/xps-mob
 
 ## Credits
 acidanthera (OpenCore, Lilu, VirtualSMC, AppleALC), b00t0x (WhateverXe, WhateverXe Graphics, AMFIAnchor, CpuTopologyRebuild), jkbuha (eDP keep), HighDelay/NullMoth (NVIDIA driver), OpenIntelWireless (itlwm, IntelBluetoothFirmware), laobamac (SimpleHDA), ductruongvu23 (i7-13620H CPUFriend profile), VoodooI2C. WhateverXe is licensed as in `WhateverXe-LICENSE.txt`.
+
+## Daily use: smoothest Tahoe (iGPU only)
+
+The remaining desktop stutter (Spotlight, opening Settings or Discord) is a WhateverXe driver limitation on Tahoe:
+with `-disablegfxfirmware` the CPU submits and completes every GPU job (no GuC), so WindowServer's many small
+blur/animation jobs are latency-bound while the GPU sits mostly idle
+(see [b00t0x/WhateverXe#182](https://github.com/b00t0x/WhateverXe/issues/182)). Until that is fixed upstream, this setup minimises it:
+
+1. **`EFI/OC/config-daily.plist`** – copy over `config.plist` (keep a backup of the old one). Compared with `config-wex.plist`:
+   - RTX 4050 off (`-nvoff`, no NVIDIA args): avoids the NullMoth Sandbox / Metal compiler interaction seen in
+     [b00t0x/WhateverXe#206](https://github.com/b00t0x/WhateverXe/issues/206).
+   - `-wex-tgl-hold-render-wake` added: keeps the render engine out of RC6 between frames (measured ~40 → ~65–117 fps
+     in Spotlight). Costs some battery/heat; remove it on battery-only days.
+   - No `-v debug=0x100 keepsyms=1`, OpenCore file logging off.
+2. **`tools/tahoe-smooth.sh`** – run once in macOS: Reduce Transparency + Reduce Motion, shorter Dock/window
+   animations, Low Power Mode off. `bash tools/tahoe-smooth.sh undo` reverts.
+3. **By hand:** Displays → Refresh Rate **60 Hz** (a steady 60 feels smoother than 144 dropping to 40),
+   Appearance → Liquid Glass **Tinted** if available, and keep the charger in when you want maximum smoothness.
+
+For the RTX 4050, boot the old `config.plist` from the backup.
