@@ -13,7 +13,9 @@ ok(){ echo "  ok   $1"; }; bad(){ echo "  FAIL $1 -> set it by hand in System Se
 w(){ defaults write "$@" 2>/dev/null; }
 
 echo "Accessibility:"
-w com.apple.universalaccess reduceTransparency -bool $v && ok "Reduce Transparency=$v" || bad "Reduce Transparency"
+# Reduce Transparency removes Liquid Glass (opaque Dock). Off by default; run with "glass-off" to enable it.
+[ "${1:-}" = glass-off ] && { w com.apple.universalaccess reduceTransparency -bool true && ok "Reduce Transparency=true" || bad "Reduce Transparency"; }
+[ $v = false ] && w com.apple.universalaccess reduceTransparency -bool false
 w com.apple.universalaccess reduceMotion       -bool $v && ok "Reduce Motion=$v"       || bad "Reduce Motion"
 
 echo "Dock / windows / Mission Control:"
@@ -31,6 +33,13 @@ else
   defaults delete NSGlobalDomain NSWindowResizeTime 2>/dev/null
 fi
 ok "animations $( [ $v = true ] && echo reduced || echo restored )"
+
+echo "WindowManager (desktop widgets / Stage Manager / click-to-show-desktop):"
+for k in StandardHideWidgets StageManagerHideWidgets; do
+  [ $v = true ] && w com.apple.WindowManager $k -bool true || defaults delete com.apple.WindowManager $k 2>/dev/null; done
+if [ $v = true ]; then w com.apple.WindowManager GloballyEnabled -bool false; w com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+else defaults delete com.apple.WindowManager GloballyEnabled 2>/dev/null; defaults delete com.apple.WindowManager EnableStandardClickToShowDesktop 2>/dev/null; fi
+killall WindowManager 2>/dev/null; ok "WindowManager $( [ $v = true ] && echo trimmed || echo restored )"
 
 echo "Power (needs sudo): Low Power Mode off - the CPU drives GPU submission here"
 [ $v = true ] && sudo pmset -a lowpowermode 0 && ok "lowpowermode 0"

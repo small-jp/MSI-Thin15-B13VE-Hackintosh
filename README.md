@@ -53,7 +53,7 @@ blur/animation jobs are latency-bound while the GPU sits mostly idle
    - `-wex-tgl-hold-render-wake` added: keeps the render engine out of RC6 between frames (measured ~40 → ~65–117 fps
      in Spotlight). Costs some battery/heat; remove it on battery-only days.
    - No `-v debug=0x100 keepsyms=1`, OpenCore file logging off.
-2. **`tools/tahoe-smooth.sh`** – run once in macOS: Reduce Transparency + Reduce Motion, shorter Dock/window
+2. **`tools/tahoe-smooth.sh`** – run once in macOS: Reduce Motion (Liquid Glass kept; `glass-off` also enables Reduce Transparency), WindowManager trimmed (widgets/Stage Manager off), shorter Dock/window
    animations, Low Power Mode off. `bash tools/tahoe-smooth.sh undo` reverts.
 3. **By hand:** Displays → Refresh Rate **60 Hz** (a steady 60 feels smoother than 144 dropping to 40),
    Appearance → Liquid Glass **Tinted** if available, and keep the charger in when you want maximum smoothness.
